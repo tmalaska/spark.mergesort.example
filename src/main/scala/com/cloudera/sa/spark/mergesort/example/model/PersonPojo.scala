@@ -12,4 +12,8 @@ class PersonPojo(val personId:Long,
 
     Row(personId, transRowSeq)
   }
+
+  def + (other:PersonPojo): PersonPojo = {
+    new PersonPojo(personId, trans ++ other.trans)
+  }
 }

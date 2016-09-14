@@ -2,7 +2,7 @@ package com.cloudera.sa.spark.mergesort.example
 
 import java.util
 
-import com.cloudera.sa.spark.mergesort.example.partitioner.BasicBucketingPartitioner
+import com.cloudera.sa.spark.mergesort.example.partitioner.InitialBucketingPartitioner
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -93,7 +93,7 @@ object BucketSplitter {
           midCount = firstRecordsBc.value.get(r.getLong(r.fieldIndex("account_id"))) / 2
         }
         counter += 1
-        if (counter > midCount) {
+        if (counter >= midCount) {
           r
         } else {
           null

@@ -1,6 +1,6 @@
 package com.cloudera.sa.spark.mergesort.example
 
-import com.cloudera.sa.spark.mergesort.example.partitioner.BasicBucketingPartitioner
+import com.cloudera.sa.spark.mergesort.example.partitioner.InitialBucketingPartitioner
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -51,10 +51,10 @@ object InitialBucketAndSort {
     val bucketedSortedRowRdd = sqlContext.sql("select * from " + inputTable).map(r => {
       val accountId = r.getLong(r.fieldIndex("account_id"))
 
-      val saltedKey = Math.abs(accountId.hashCode() % numOfSalts).toInt
+      val saltedKey = Math.abs(accountId.hashCode() % numOfSalts)
 
       ((saltedKey, accountId), r)
-    }).repartitionAndSortWithinPartitions(new BasicBucketingPartitioner(numOfSalts)).map(r => {
+    }).repartitionAndSortWithinPartitions(new InitialBucketingPartitioner(numOfSalts)).map(r => {
       r._2
     })
 
