@@ -6,7 +6,7 @@ spark-submit --class com.cloudera.sa.spark.mergesort.example.DataGenerator \
 --master yarn --deploy-mode client --executor-memory 512MB --num-executors 2 --executor-cores 1 \
 MergeExample.jar \
 l \
-1000 \
+10000 \
 5 \
 10 \
 gen_data \
@@ -38,14 +38,15 @@ spark-submit --class com.cloudera.sa.spark.mergesort.example.BucketedSortedMerge
 --master yarn --deploy-mode client --executor-memory 512MB --num-executors 2 --executor-cores 1 \
 MergeExample.jar \
 l \
-1000 \
+10 \
 bs_data \
 gen_data_2 \
+/Users/ted.malaska/Documents/workspace/github/spark.mergesort.example/hive/tmp \
 merged_table \
 /Users/ted.malaska/Documents/workspace/github/spark.mergesort.example/hive/merged_data
 
 ## View the Data
-spark-submit --class com.cloudera.sa.spark.mergesort.example.BucketedSortedMerge \
+spark-submit --class com.cloudera.sa.spark.mergesort.example.ViewData \
 --master yarn --deploy-mode client --executor-memory 512MB --num-executors 2 --executor-cores 1 \
 MergeExample.jar \
 l /

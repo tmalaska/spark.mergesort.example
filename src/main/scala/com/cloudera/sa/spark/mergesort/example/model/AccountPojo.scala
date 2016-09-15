@@ -48,7 +48,8 @@ class AccountPojo(val accountId:Long,
 object AccountPojoBuilder {
   def build(row:Row): AccountPojo = {
 
-    val persons = row.getSeq(1).map(r => {
+
+    val persons = row.get(1).asInstanceOf[mutable.WrappedArray[Row]].map(r => {
       PersonPojoBuilder.build(r)
     })
 

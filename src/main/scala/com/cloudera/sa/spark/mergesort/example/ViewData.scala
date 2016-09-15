@@ -1,6 +1,5 @@
 package com.cloudera.sa.spark.mergesort.example
 
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 

@@ -1,7 +1,6 @@
 package com.cloudera.sa.spark.mergesort.example
 
 import com.cloudera.sa.spark.mergesort.example.partitioner.InitialBucketingPartitioner
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 

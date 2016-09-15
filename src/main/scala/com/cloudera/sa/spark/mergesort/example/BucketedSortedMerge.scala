@@ -4,12 +4,12 @@ import com.cloudera.sa.spark.mergesort.example.model.{AccountPojo, AccountPojoBu
 import com.cloudera.sa.spark.mergesort.example.partitioner.MergeBucketingPartitioner
 import org.apache.commons.lang.{SerializationUtils, StringUtils}
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{BytesWritable, SequenceFile}
+import org.apache.hadoop.io.{BytesWritable, SequenceFile, Text}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.hive.HiveContext
 
 
 object BucketedSortedMerge {
@@ -44,9 +44,9 @@ object BucketedSortedMerge {
       new SparkContext(sparkConf)
     }
 
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = new HiveContext(sc)
 
-    sqlContext.sql("create external table " + outputTable + " ( " +
+    sqlContext.sql("create external table if not exists " + outputTable + " ( " +
       " account_id BIGINT, " +
       " person ARRAY<STRUCT< " +
       "   person_id: BIGINT, " +
@@ -55,7 +55,7 @@ object BucketedSortedMerge {
       "     amount: DOUBLE, " +
       "     datetime: BIGINT " +
       "   >> " +
-      " >> " +
+      " >>) " +
       " STORED AS PARQUET " +
       " LOCATION '" + outputFolder + "'")
 
@@ -77,11 +77,18 @@ object BucketedSortedMerge {
 
     val inputNewDf = sqlContext.sql("select * from " + inputNewTable)
 
-    val bucktedAndSortedInputNewRdd = inputNewDf.map(r => {
+    val bucktedAndSortedInputNewRdd = inputNewDf.
+      map(r => {
       (r.getLong(r.fieldIndex("account_id")), r)
-    }).repartitionAndSortWithinPartitions(
-      new MergeBucketingPartitioner(numOfSalts, firstRecordsBc)).map(r => {
+    }).
+      repartitionAndSortWithinPartitions(new MergeBucketingPartitioner(numOfSalts, firstRecordsBc)).
+      map(r => {
       ("", SerializationUtils.serialize(AccountPojoBuilder.build(r._2)))
+    })
+
+    val sample = bucktedAndSortedInputNewRdd.take(10)
+    sample.foreach(r => {
+      println
     })
 
     bucktedAndSortedInputNewRdd.saveAsSequenceFile(typeFolder)
@@ -96,7 +103,12 @@ object BucketedSortedMerge {
         typeFolder)
     })
 
-    sqlContext.createDataFrame(mergedOutputRdd, inputExistingDf.schema)
+    sqlContext.createDataFrame(mergedOutputRdd, inputExistingDf.schema).
+      registerTempTable("mergedTemp")
+
+    sqlContext.sql("insert into " + outputTable + " select * from mergedTemp")
+
+    sqlContext.sql("select * from " + outputTable + " limit 5").collect().foreach(println)
 
     sc.stop
   }
@@ -113,7 +125,7 @@ class MergeIterator (it:Iterator[org.apache.spark.sql.Row],
   var lastWasFromExisting = true
   val fs = StaticFileSystem.getFileSystem()
   val valueWritable = new BytesWritable()
-  val keyWriteable = new BytesWritable()
+  val keyWriteable = new Text()
   var reader:SequenceFile.Reader = null
   val nextValue:AccountPojo = null
 
@@ -147,14 +159,15 @@ class MergeIterator (it:Iterator[org.apache.spark.sql.Row],
 
   override def next(): org.apache.spark.sql.Row = {
     var result:org.apache.spark.sql.Row = null
-    if (currentSeqAccount.accountId < existingAccount.accountId) {
+    if ((existingAccount == null && currentSeqAccount != null) ||
+      (currentSeqAccount != null && currentSeqAccount.accountId < existingAccount.accountId)) {
       result = currentSeqAccount.toRow
       currentSeqAccount = null
-    } else if (currentSeqAccount.accountId == existingAccount.accountId) {
+    } else if (existingAccount != null && currentSeqAccount != null && currentSeqAccount.accountId == existingAccount.accountId) {
       result = (currentSeqAccount + existingAccount).toRow
       currentSeqAccount = null
       existingAccount = null
-    } else {
+    } else if (existingAccount != null) {
       result = existingAccount.toRow
       existingAccount = null
     }

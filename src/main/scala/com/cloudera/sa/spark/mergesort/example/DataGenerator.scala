@@ -3,7 +3,6 @@ package com.cloudera.sa.spark.mergesort.example
 import java.util.{Date, Random}
 
 import com.cloudera.sa.spark.mergesort.example.model.{AccountPojo, PersonPojo, TranPojo}
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 
