@@ -1,8 +1,16 @@
 package com.cloudera.sa.spark.mergesort.example
 
+import com.cloudera.sa.spark.mergesort.example.model.{AccountPojo, AccountPojoBuilder}
 import com.cloudera.sa.spark.mergesort.example.partitioner.MergeBucketingPartitioner
-import org.apache.spark.sql.SQLContext
+import org.apache.commons.lang.{SerializationUtils, StringUtils}
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{BytesWritable, SequenceFile}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.Row
+
 
 object BucketedSortedMerge {
   def main(args:Array[String]): Unit = {
@@ -73,15 +81,83 @@ object BucketedSortedMerge {
       (r.getLong(r.fieldIndex("account_id")), r)
     }).repartitionAndSortWithinPartitions(
       new MergeBucketingPartitioner(numOfSalts, firstRecordsBc)).map(r => {
-      r._2
+      ("", SerializationUtils.serialize(AccountPojoBuilder.build(r._2)))
     })
 
-    sqlContext.createDataFrame(bucktedAndSortedInputNewRdd, inputExistingRdd.schema).
-      write.parquet(typeFolder)
+    bucktedAndSortedInputNewRdd.saveAsSequenceFile(typeFolder)
 
+    val inputExistingDf = sqlContext.sql("select * from " + inputExistingTable)
 
+    val mergedOutputRdd:RDD[org.apache.spark.sql.Row] = inputExistingDf.mapPartitions(it => {
+
+      new MergeIterator(it,
+        numOfSalts,
+        firstRecordsBc,
+        typeFolder)
+    })
+
+    sqlContext.createDataFrame(mergedOutputRdd, inputExistingDf.schema)
 
     sc.stop
+  }
+}
 
+class MergeIterator (it:Iterator[org.apache.spark.sql.Row],
+                         numOfSalts:Int,
+                         firstRecordsBc:Broadcast[Array[(Long,Int)]],
+                         typeFolder:String) extends Iterator[Row] {
+
+  var isFirst = true
+  var currentSeqAccount:AccountPojo = null
+  var existingAccount:AccountPojo = null
+  var lastWasFromExisting = true
+  val fs = StaticFileSystem.getFileSystem()
+  val valueWritable = new BytesWritable()
+  val keyWriteable = new BytesWritable()
+  var reader:SequenceFile.Reader = null
+  val nextValue:AccountPojo = null
+
+  override def hasNext: Boolean = {
+    if (existingAccount == null) {
+      if (it.hasNext) {
+        existingAccount = AccountPojoBuilder.build(it.next())
+
+        if (isFirst) {
+          isFirst = false
+          val partitioner = new MergeBucketingPartitioner(numOfSalts, firstRecordsBc)
+          val thisPartition = partitioner.getPartition(existingAccount.accountId)
+
+          val seqPath = new Path(typeFolder + "/part-" + StringUtils.leftPad(thisPartition.toString, 5, '0'))
+          reader = new SequenceFile.Reader(fs, seqPath, fs.getConf)
+
+          if (reader.next(keyWriteable, valueWritable)) {
+            currentSeqAccount = SerializationUtils.deserialize(valueWritable.copyBytes()).asInstanceOf[AccountPojo]
+          }
+        }
+      }
+    }
+
+    if (currentSeqAccount == null) {
+      if (reader.next(keyWriteable, valueWritable)) {
+        currentSeqAccount = SerializationUtils.deserialize(valueWritable.copyBytes()).asInstanceOf[AccountPojo]
+      }
+    }
+    currentSeqAccount != null || existingAccount != null
+  }
+
+  override def next(): org.apache.spark.sql.Row = {
+    var result:org.apache.spark.sql.Row = null
+    if (currentSeqAccount.accountId < existingAccount.accountId) {
+      result = currentSeqAccount.toRow
+      currentSeqAccount = null
+    } else if (currentSeqAccount.accountId == existingAccount.accountId) {
+      result = (currentSeqAccount + existingAccount).toRow
+      currentSeqAccount = null
+      existingAccount = null
+    } else {
+      result = existingAccount.toRow
+      existingAccount = null
+    }
+    result
   }
 }

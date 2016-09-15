@@ -7,7 +7,7 @@ import org.apache.spark.sql.Row
 import scala.collection.mutable
 
 class AccountPojo(val accountId:Long,
-                  val persons:Array[PersonPojo]) {
+                  val persons:Array[PersonPojo]) extends Serializable {
   def toRow: Row = {
 
     val personRowSeq = persons.map(r => {
@@ -42,5 +42,17 @@ class AccountPojo(val accountId:Long,
     }
 
     new AccountPojo(accountId, newPersonList.toArray)
+  }
+}
+
+object AccountPojoBuilder {
+  def build(row:Row): AccountPojo = {
+
+    val persons = row.getSeq(1).map(r => {
+      PersonPojoBuilder.build(r)
+    })
+
+    new AccountPojo(row.getLong(0), persons.toArray)
+
   }
 }
