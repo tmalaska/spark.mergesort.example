@@ -4,6 +4,7 @@ import java.util.{Date, Random}
 
 import com.cloudera.sa.spark.mergesort.example.model.{AccountPojo, PersonPojo, TranPojo}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 object DataGenerator {
@@ -36,17 +37,17 @@ object DataGenerator {
       new SparkContext(sparkConf)
     }
 
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = new HiveContext(sc)
 
     val arrayOfAccounts = new Array[AccountPojo](numOfAccounts)
     val r = new Random()
     var time = (new Date).getTime
 
-    for (a <- 0 to numOfAccounts) {
+    for (a <- 0 until numOfAccounts) {
       val arrayOfPersons = new Array[PersonPojo](numOfPersons)
-      for (p <- 0 to numOfPersons) {
+      for (p <- 0 until numOfPersons) {
         val arrayOfTrans = new Array[TranPojo](numOfTrans)
-        for (t <- 0 to numOfTrans) {
+        for (t <- 0 until numOfTrans) {
           time += 10000
 
           arrayOfTrans(t) = new TranPojo(t, r.nextInt(), time)
@@ -69,7 +70,7 @@ object DataGenerator {
       "     amount: DOUBLE, " +
       "     datetime: BIGINT " +
       "   >> " +
-      " >> " +
+      " >>) " +
       " STORED AS PARQUET " +
       " LOCATION '" + outputFolder + "'")
 

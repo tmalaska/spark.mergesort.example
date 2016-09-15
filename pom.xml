@@ -28,17 +28,6 @@
             <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <version>${hbase.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-spark</artifactId>
-            <version>${hbase.version}</version>
-        </dependency>
         <!-- Mark Spark / Scala as provided -->
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -109,11 +98,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka.version}</version>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -125,22 +109,6 @@
             <artifactId>scalatest_${scala.binary.version}</artifactId>
             <version>2.2.1</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.kududb</groupId>
-            <artifactId>kudu-client</artifactId>
-            <version>${kudu.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kududb</groupId>
-            <artifactId>kudu-mapreduce</artifactId>
-            <version>${kudu.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kududb</groupId>
-            <artifactId>kudu-spark_${scala.binary.version}</artifactId>
-            <version>${kudu.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -173,25 +141,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>${solr.version}</version>
-        </dependency>
-
     </dependencies>
 
     <build>
