@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Thu Sep 15 13:29:47 EDT 2016:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-0157-2ee5-aeda-0000195265d0 
-on database directory /Users/ted.malaska/Documents/workspace/github/spark.mergesort.example/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@3a9c11fb 
+Thu Sep 15 15:54:55 EDT 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-0157-2f6a-8e94-0000188f19a8 
+on database directory /Users/ted.malaska/Documents/workspace/github/spark.mergesort.example/metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@151a6598 
 Loaded from file:/Users/ted.malaska/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_91-b14
