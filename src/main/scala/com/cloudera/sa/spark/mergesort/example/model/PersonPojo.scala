@@ -18,6 +18,15 @@ class PersonPojo(val personId:Long,
   def + (other:PersonPojo): PersonPojo = {
     new PersonPojo(personId, trans ++ other.trans)
   }
+
+  override def hashCode(): Int = {
+
+    var childHashSum = 0
+
+    trans.foreach(p => childHashSum += p.hashCode())
+
+    personId.hashCode() + childHashSum
+  }
 }
 
 object PersonPojoBuilder {

@@ -17,6 +17,15 @@ class AccountPojo(val accountId:Long,
     Row(accountId, personRowSeq)
   }
 
+  override def hashCode(): Int = {
+
+    var childHashSum = 0
+
+    persons.foreach(p => childHashSum += p.hashCode())
+
+    accountId.hashCode() + childHashSum
+  }
+
   def + (other:AccountPojo): AccountPojo = {
     val lookupMap = new util.HashMap[Long, PersonPojo]
     persons.foreach(r => {
@@ -43,6 +52,8 @@ class AccountPojo(val accountId:Long,
 
     new AccountPojo(accountId, newPersonList.toArray)
   }
+
+
 }
 
 object AccountPojoBuilder {

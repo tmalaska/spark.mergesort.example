@@ -8,6 +8,10 @@ class TranPojo(val tranId:Long,
   def toRow: Row = {
     Row(tranId, amount, datetime)
   }
+
+  override def hashCode(): Int = {
+    tranId.hashCode() + amount.hashCode() + datetime.hashCode()
+  }
 }
 
 object TranPojoBuilder {
