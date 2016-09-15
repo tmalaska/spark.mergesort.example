@@ -48,6 +48,7 @@ merged_table \
 spark-submit --class com.cloudera.sa.spark.mergesort.example.BucketedSortedMerge \
 --master yarn --deploy-mode client --executor-memory 512MB --num-executors 2 --executor-cores 1 \
 MergeExample.jar \
+l /
 merged_table \
 100
 
