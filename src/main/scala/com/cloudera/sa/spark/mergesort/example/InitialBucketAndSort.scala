@@ -2,6 +2,7 @@ package com.cloudera.sa.spark.mergesort.example
 
 import com.cloudera.sa.spark.mergesort.example.partitioner.InitialBucketingPartitioner
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 object InitialBucketAndSort {
@@ -33,7 +34,7 @@ object InitialBucketAndSort {
       new SparkContext(sparkConf)
     }
 
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = new HiveContext(sc)
 
     sqlContext.sql("create external table " + outputTable + " ( " +
       " account_id BIGINT, " +
@@ -44,7 +45,7 @@ object InitialBucketAndSort {
       "     amount: DOUBLE, " +
       "     datetime: BIGINT " +
       "   >> " +
-      " >> " +
+      " >>) " +
       " STORED AS PARQUET " +
       " LOCATION '" + outputFolder + "'")
 
